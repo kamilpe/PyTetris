@@ -7,9 +7,9 @@ def draw_bricks(surface, x, y, bricks_map):
         cur_x = x
         for brick in row:
             if brick:
-                surface.fill(BLOCK_COLOR, (cur_x, cur_y, BLOCK_SIZE, BLOCK_SIZE))
-            cur_x+=BLOCK_SIZE
-        cur_y+=BLOCK_SIZE
+                surface.fill(BLOCK_COLOR, (cur_x, cur_y, BRICK_SIZE, BRICK_SIZE))
+            cur_x+=BRICK_SIZE
+        cur_y+=BRICK_SIZE
 
 class Renderer:
     def __init__(self, screen):
@@ -39,14 +39,14 @@ class Renderer:
         pygame.draw.rect(self.screen, FRAME_OUTER_SHADOW, (
             BOARD_POS_X + BOARD_SIZE_W + 50, 
             BOARD_POS_Y, 
-            BLOCK_SIZE*5 +2,
-            BLOCK_SIZE*6 +2), 1)
+            BRICK_SIZE*6 + 2,
+            BRICK_SIZE*6 + 2), 1)
         # border
         pygame.draw.rect(self.screen, FRAME_BORDER, (
             BOARD_POS_X + BOARD_SIZE_W + 49, 
             BOARD_POS_Y-1, 
-            BLOCK_SIZE*5 +2,
-            BLOCK_SIZE*6 +2), 1)
+            BRICK_SIZE*6 + 2,
+            BRICK_SIZE*6 + 2), 1)
 
         info1 = self.info_font.render("Press R to reset the game", True, INFO_COLOR)
         self.screen.blit(info1, (INFO_POS_X, INFO_POS_Y))
@@ -55,7 +55,11 @@ class Renderer:
 
     def draw_game(self, tetris_board):
         # Points:
-        points = self.points_font.render("Points: 35", True, POINTS_COLOR)
+        points = self.points_font.render("Points: " + str(tetris_board.points), True, POINTS_COLOR)
+        self.screen.fill(BG_COLOR, (POINTS_POS_X, 
+                                    POINTS_POS_Y,
+                                    points.get_width(),
+                                    points.get_height()))
         self.screen.blit(points, (POINTS_POS_X, POINTS_POS_Y))
     
         # Board
@@ -69,22 +73,22 @@ class Renderer:
         pygame.draw.rect(self.screen, FRAME_INNER, (
             BOARD_POS_X + BOARD_SIZE_W + 50, 
             BOARD_POS_Y, 
-            BLOCK_SIZE*5, 
-            BLOCK_SIZE*6))
+            BRICK_SIZE*6, 
+            BRICK_SIZE*6))
 
         # draw bricks
         draw_bricks(self.screen, BOARD_POS_X, BOARD_POS_Y, tetris_board.board)
 
         # draw current block
         draw_bricks(self.screen, 
-                    BOARD_POS_X + tetris_board.current_block_x * BLOCK_SIZE,
-                    BOARD_POS_Y + tetris_board.current_block_y * BLOCK_SIZE,
+                    BOARD_POS_X + tetris_board.current_block_x * BRICK_SIZE,
+                    BOARD_POS_Y + tetris_board.current_block_y * BRICK_SIZE,
                     tetris_board.current_block)
 
         # draw next block
         draw_bricks(self.screen, 
-                    BOARD_POS_X + BOARD_SIZE_W + 50 + BLOCK_SIZE,
-                    BOARD_POS_Y + BLOCK_SIZE,
+                    BOARD_POS_X + BOARD_SIZE_W + 50 + BRICK_SIZE,
+                    BOARD_POS_Y + BRICK_SIZE,
                     tetris_board.next_block)
         
         pygame.display.flip()

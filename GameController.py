@@ -5,7 +5,8 @@ class GameControl:
         self.board = board
         self.renderer = renderer
         self.clock = pygame.time.Clock()
-        self.last_tick = pygame.time.get_ticks()        
+        self.first_tick = pygame.time.get_ticks()
+        self.last_tick = pygame.time.get_ticks()
         self.current_delay = 750
         self.target_delay = 750
         self.running = True
@@ -28,6 +29,8 @@ class GameControl:
                     self.board.left()
                 if keys[pygame.K_RIGHT]:
                     self.board.right()
+                if keys[pygame.K_UP]:
+                    self.board.rotate()
                 if keys[pygame.K_DOWN]:
                     self.current_delay = 50
                 if keys[pygame.K_q] or keys[pygame.K_ESCAPE]:
@@ -42,4 +45,9 @@ class GameControl:
         if pygame.time.get_ticks() >= next_update:
             self.last_tick = pygame.time.get_ticks()
             self.board.advance()
+        self.target_delay = 750 - (self.last_tick - self.first_tick)/1000
+        if self.current_delay != 50:
+            self.current_delay = self.target_delay
+        #print(self.target_delay)
+        
 

@@ -83,7 +83,7 @@ class Renderer:
         draw_bricks(self.screen, 
                     BOARD_POS_X + tetris_board.current_block_x * BRICK_SIZE,
                     BOARD_POS_Y + tetris_board.current_block_y * BRICK_SIZE,
-                    tetris_board.current_block)
+                    tetris_board.cur_block)
 
         # draw next block
         draw_bricks(self.screen, 

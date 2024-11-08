@@ -1,33 +1,8 @@
 import random
 import pygame
+import patterns
 from config import *
 
-PATTERNS = [
-            [[0,0,0,0],
-             [0,1,1,0],
-             [0,1,1,0],
-             [0,0,0,0]],
-
-            [[0,0,1,0],
-             [0,0,1,0],
-             [0,0,1,0],
-             [0,0,1,0]],
-
-            [[0,0,0,0],
-             [0,0,1,0],
-             [0,1,1,1],
-             [0,0,0,0]],
-
-            [[0,0,0,0],
-             [0,0,1,1],
-             [0,1,1,0],
-             [0,0,0,0]],
-
-            [[0,0,1,0],
-             [0,0,1,0],
-             [0,1,1,0],
-             [0,0,0,0]]
-           ]
 
 def rotate_matrix(matrix):
     new_matrix = []
@@ -61,37 +36,43 @@ class TetrisBoard:
                 [0,0,0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0,0,0]]
-        self.current_block = []
-        self.current_block_x = 0
-        self.current_block_y = 0
         self.points = 0
         random.seed(pygame.time.get_ticks())
-        self.inject(self.get_random_block())
-        self.next_block = self.next_block = self.get_random_block()
+        self.inject(self.get_random_pattern())
+        self.set_next_pattern(self.get_random_pattern())
     
-    def inject(self, block):
+    def inject(self, pattern):
         random.seed(pygame.time.get_ticks())
-        self.current_block = block
-        block_width = len(self.current_block)
+        self.set_cur_pattern(pattern)
+        
+        block_width = len(self.cur_block)
         self.current_block_x = int(BOARD_BLOCKS_W / 2 - block_width / 2)
         self.current_block_y = 0
 
-    def get_block(self,index, mirror=False):
-        return PATTERNS[index]
+    def set_cur_pattern(self, pattern):
+        self.cur_pattern_idx = pattern[0]
+        self.cur_pattern_orientation = pattern[1]
+        self.cur_block = patterns.get_block(self.cur_pattern_idx, self.cur_pattern_orientation)
 
-    def get_random_block(self):
-        return self.get_block(random.randint(0, len(PATTERNS)-1),
-                              random.randint(0, 1))
+    def set_next_pattern(self, pattern):
+        self.next_pattern_idx = pattern[0]
+        self.next_pattern_orientation = pattern[1]
+        self.next_block = patterns.get_block(self.next_pattern_idx, self.next_pattern_orientation)
+
+    def get_random_pattern(self):
+        patternId = random.randint(0, patterns.PATTERNS_COINT-1)
+        orientation = random.randint(0, patterns.ORIENTATION_COUNT-1)
+        return (patternId, orientation)
 
     def advance(self):
         if (self.simulate_action(
             self.current_block_x, 
             self.current_block_y, 
-            self.current_block) == self.ACTION_IMPACT):
+            self.cur_block) == self.ACTION_IMPACT):
 
             self.burnin_current_block()
-            self.inject(self.next_block)
-            self.next_block = self.get_random_block()
+            self.inject((self.next_pattern_idx, self.next_pattern_orientation))
+            self.set_next_pattern(self.get_random_pattern())
             self.validate_rows()
             return
         self.current_block_y+=1
@@ -118,7 +99,7 @@ class TetrisBoard:
     def burnin_current_block(self):
         row_idx = 0
         brick_idx = 0
-        for row in self.current_block:
+        for row in self.cur_block:
             brick_idx = 0
             for brick in row:
                 if brick:
@@ -133,7 +114,6 @@ class TetrisBoard:
         points = 0
         for row_idx in range(0,BOARD_BLOCKS_H):
             row = self.board[row_idx]
-            print(row_idx,":",sum(row))
             if sum(row) == BOARD_BLOCKS_W:
                 multiplayer+=1
                 points+=POINTS_PER_ROW
@@ -149,15 +129,18 @@ class TetrisBoard:
         if (self.simulate_action(
             self.current_block_x - 1, 
             self.current_block_y,
-            self.current_block) == self.NO_ACTION):
+            self.cur_block) == self.NO_ACTION):
             self.current_block_x-=1
     
     def right(self):
         if (self.simulate_action(
             self.current_block_x + 1, 
             self.current_block_y,
-            self.current_block) == self.NO_ACTION):
+            self.cur_block) == self.NO_ACTION):
             self.current_block_x+=1
 
     def rotate(self):
-        self.current_block = rotate_matrix(self.current_block)
+        if self.cur_pattern_orientation < patterns.ORIENTATION_COUNT-1:
+            self.set_cur_pattern((self.cur_pattern_idx, self.cur_pattern_orientation+1))
+        else:
+            self.set_cur_pattern((self.cur_pattern_idx, 0))
